@@ -34,9 +34,7 @@ for u, v in edges:
 
 start = "Rahul"
 
-# ----------------------------
 # BFS TREE
-# ----------------------------
 def bfs_tree(graph, start):
     visited = set([start])
     queue = deque([start])
@@ -56,9 +54,7 @@ def bfs_tree(graph, start):
     return order, tree_edges
 
 
-# ----------------------------
 # DFS TREE
-# ----------------------------
 def dfs_tree(graph, start):
     visited = set()
     stack = [start]
@@ -80,9 +76,9 @@ def dfs_tree(graph, start):
     return order, tree_edges
 
 
-# ----------------------------
+
 # Run both
-# ----------------------------
+
 bfs_order, bfs_edges = bfs_tree(graph, start)
 dfs_order, dfs_edges = dfs_tree(graph, start)
 
