@@ -1,157 +1,143 @@
+cities = {
+    0: "Chicago",
+    1: "Detroit",
+    2: "Cleveland",
+    3: "Indianapolis",
+    4: "Columbus",
+    5: "Pittsburgh",
+    6: "Buffalo",
+    7: "Syracuse",
+    8: "New York",
+    9: "Philadelphia",
+    10: "Baltimore",
+    11: "Boston",
+    12: "Providence",
+    13: "Portland"
+}
+
+n = 14
+
+# adjacency matrix
+adj = [[0 for _ in range(n)] for _ in range(n)]
+
+edges = [
+    (0,1,283),(0,2,345),(0,3,182),
+    (1,2,169),(1,6,256),
+    (2,6,189),(2,5,134),(2,4,144),
+    (3,4,176),
+    (4,5,185),
+    (5,6,215),(5,9,305),(5,10,247),
+    (6,7,150),
+    (7,8,254),(7,11,312),
+    (8,9,97),(8,12,181),
+    (9,10,101),(9,11,215),
+    (11,12,50),(11,13,107)
+]
+
+for u, v, w in edges:
+    adj[u][v] = w
+    adj[v][u] = w
+
+
 class Node:
-    def __init__(self, state, parent=None, action=None, path_cost=0):
-        self.state = state          
-        self.parent = parent        
-        self.action = action        
-        self.path_cost = path_cost  
-        
-    def __repr__(self):
-        return f"Node(state={self.state}, cost={self.path_cost})"
-    
-class Action:
-    def __init__(self, from_state, to_state, cost):
-        self.from_state = from_state
-        self.to_state = to_state
-        self.cost = cost
+    def __init__(self, state, parent=None, path_cost=0):
+        self.state = state
+        self.parent = parent
+        self.path_cost = path_cost
 
-    def __repr__(self):
-        return f"{self.from_state} -> {self.to_state} (cost={self.cost})"
-    
-class Actions:
-    def __init__(self, graph):
-        self.graph = graph
-
-    def get_actions(self, state):
-        actions = []
-        for neighbor, cost in self.graph[state]:
-            actions.append(Action(state, neighbor, cost))
-        return actions
-    
-def result(state, action):
-    return action.to_state
-
-def expand(node, actions_obj):
-    s = node.state  
-
-    for action in actions_obj.get_actions(s):        
-        s_prime = result(s, action)                  
-        new_cost = node.path_cost + action.cost      
-
-        child_node = Node(
-            state=s_prime,
-            parent=node,
-            action=action,
-            path_cost=new_cost
-        )
-
-        yield child_node
 
 class PriorityQueue:
-    def __init__(self):
-        self.queue = []
+    def __init__(self, f):
+        self.data = []
+        self.f = f
 
-    def is_empty(self):
-        return len(self.queue) == 0
-
-    def push(self, node, priority):
-        self.queue.append((node, priority))
-
-        self.queue.sort(key=lambda x: x[1])
+    def add(self, node):
+        self.data.append(node)
+        self.data.sort(key=self.f)
 
     def pop(self):
-        if self.is_empty():
-            return None
-        return self.queue.pop(0)[0]
+        return self.data.pop(0)
 
-    def __repr__(self):
-        return str([(n.state, p) for n, p in self.queue])
+    def is_empty(self):
+        return len(self.data) == 0
 
-graph = {
-    "Chicago": [("Detroit", 283), ("Indianapolis", 182), ("Cleveland", 345)],
-    "Detroit": [("Chicago", 283), ("Cleveland", 169), ("Buffalo", 256)],
-    "Indianapolis": [("Chicago", 182), ("Columbus", 176)],
-    "Columbus": [("Indianapolis", 176), ("Cleveland", 144), ("Pittsburgh", 185)],
-    "Cleveland": [("Chicago", 345), ("Detroit", 169), ("Columbus", 144), ("Pittsburgh", 134)],
-    "Pittsburgh": [("Cleveland", 134), ("Columbus", 185), ("Buffalo", 215),
-                   ("Philadelphia", 305), ("Baltimore", 247)],
-    "Buffalo": [("Detroit", 256), ("Pittsburgh", 215), ("Syracuse", 150)],
-    "Syracuse": [("Buffalo", 150), ("Boston", 312), ("New York", 254)],
-    "New York": [("Syracuse", 254), ("Philadelphia", 97), ("Providence", 181)],
-    "Philadelphia": [("New York", 97), ("Baltimore", 101)],
-    "Baltimore": [("Philadelphia", 101), ("Pittsburgh", 247)],
-    "Providence": [("New York", 181), ("Boston", 50)],
-    "Boston": []
-}
 
-heuristic = {
-    "Chicago": 983,
-    "Detroit": 882,
-    "Indianapolis": 900,
-    "Columbus": 850,
-    "Cleveland": 800,
-    "Pittsburgh": 700,
-    "Buffalo": 600,
-    "Syracuse": 450,
-    "New York": 215,
-    "Philadelphia": 270,
-    "Baltimore": 350,
-    "Providence": 100,
-    "Boston": 0
-}
+class Problem:
+    def __init__(self, initial, goal):
+        self.INITIAL = initial
+        self.goal = goal
 
-def reconstruct_path(node):
+    def is_goal(self, state):
+        return state == self.goal
+
+    def ACTIONS(self, state):
+        actions = []
+        for i in range(n):
+            if adj[state][i] != 0:
+                actions.append(i)
+        return actions
+
+    def RESULT(self, state, action):
+        return action
+
+    def ACTION_COST(self, s, s_prime):
+        return adj[s][s_prime]
+
+
+def EXPAND(problem, node):
+    children = []
+    for action in problem.ACTIONS(node.state):
+        cost = node.path_cost + problem.ACTION_COST(node.state, action)
+        child = Node(action, node, cost)
+        children.append(child)
+    return children
+
+
+def BeFS(problem, f):
+    node = Node(problem.INITIAL)
+
+    frontier = PriorityQueue(f)
+    frontier.add(node)
+
+    reached = {problem.INITIAL: node}
+    explored = 0
+
+    while not frontier.is_empty():
+        node = frontier.pop()
+        explored += 1
+
+        if problem.is_goal(node.state):
+            return node, explored
+
+        for child in EXPAND(problem, node):
+            s = child.state
+            if s not in reached or child.path_cost < reached[s].path_cost:
+                reached[s] = child
+                frontier.add(child)
+
+    return None, explored
+
+
+def f(node):
+    return node.path_cost
+
+
+def get_path(node):
     path = []
-
-    while node is not None:
-        path.append(node.state)
+    while node:
+        path.append(cities[node.state])
         node = node.parent
-
     return path[::-1]
 
 
-class BestFirstSearchAgent:
-    def __init__(self, graph, goal_state, heuristic_table):
-        self.graph = graph
-        self.goal_state = goal_state
-        self.heuristic = heuristic_table
-        self.actions_obj = Actions(graph)
+# Driver code
+start = 7   # Syracuse
+goal = 0    # Chicago
 
-    def f(self, node):
-        return self.heuristic[node.state]
+problem = Problem(start, goal)
+solution, explored_count = BeFS(problem, f)
 
-    def search(self, start_state):
-        start_node = Node(state=start_state)
-
-        frontier = PriorityQueue()
-        frontier.push(start_node, self.f(start_node))
-
-        reached = {start_state: start_node}
-
-        explored_count = 0
-
-        while not frontier.is_empty():
-            node = frontier.pop()
-            explored_count += 1
-
-            if node.state == self.goal_state:
-                return node, explored_count
-
-            for child in expand(node, self.actions_obj):
-                s = child.state
-                if s not in reached:
-                    reached[s] = child
-                    frontier.push(child, self.f(child))
-
-        return None, explored_count
-
-agent = BestFirstSearchAgent(
-    graph=graph,
-    goal_state="Boston",
-    heuristic_table=heuristic
-)
-
-goal_node, explored = agent.search("Chicago")
-
-print("Path Found:", " -> ".join(reconstruct_path(goal_node)))
-print("Nodes Explored:", explored)
-print("Total_cost:",goal_node.path_cost)
+print("Best First Search Path:")
+print(get_path(solution))
+print("Total cost:", solution.path_cost)
+print("Number of paths explored:", explored_count)
