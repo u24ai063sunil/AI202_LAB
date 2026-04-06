@@ -128,7 +128,6 @@ def verify(coloring: dict, graph: dict) -> bool:
 # ── 4. Pretty-print ───────────────────────────────────────────────────────────
 
 COLOR_NAMES = {0: "Red", 1: "Blue", 2: "Green", 3: "Yellow", 4: "Purple", 5: "Orange"}
-COLOR_EMOJI = {0: "🔴", 1: "🔵", 2: "🟢", 3: "🟡", 4: "🟣", 5: "🟠"}
 
 def pretty_print(k: int, coloring: dict):
     print(f"\n{'='*60}")
@@ -139,10 +138,9 @@ def pretty_print(k: int, coloring: dict):
     for d, c in sorted(coloring.items()):
         groups[c].append(d)
     for c in sorted(groups):
-        emoji = COLOR_EMOJI.get(c, "⬜")
         name  = COLOR_NAMES.get(c, f"Color-{c}")
         dists = ", ".join(groups[c])
-        print(f"  {emoji} {name:8s} ({len(groups[c]):2d} districts): {dists}")
+        print(f" {name:8s} ({len(groups[c]):2d} districts): {dists}")
     print(f"\n  Total districts coloured: {len(coloring)}")
     print(f"  Chromatic number (min colors): {k}")
 
