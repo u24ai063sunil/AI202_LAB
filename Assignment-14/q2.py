@@ -1,5 +1,3 @@
-# ───────────── BACKWARD CHAINING ─────────────
-
 def backward_chaining(rules, facts, goal, visited=None):
     if visited is None:
         visited = set()
@@ -24,8 +22,6 @@ def backward_chaining(rules, facts, goal, visited=None):
     print(f"{goal} cannot be proven")
     return False
 
-
-# ───────── TEST CASES ─────────
 
 # 2(a)
 rules2a = [

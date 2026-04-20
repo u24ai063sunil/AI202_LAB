@@ -1,25 +1,52 @@
-# ───────────── FORWARD CHAINING ─────────────
+class Queue:
+    def __init__(self):
+        self.data = []
+        self.front = 0
 
-def forward_chaining(rules, facts, goal):
-    inferred = set(facts)
-    print("\nInitial Facts:", inferred)
+    def enqueue(self, item):
+        self.data.append(item)
 
-    while True:
-        new_inferred = set()
+    def dequeue(self):
+        if self.is_empty():
+            return None
+        item = self.data[self.front]
+        self.front += 1
+        return item
+
+    def is_empty(self):
+        return self.front >= len(self.data)
+
+
+def forward_chaining_queue(rules, facts, goal):
+    inferred = set()              
+    agenda = Queue()              
+
+    print("\nInitial Facts:", facts)
+
+    for fact in facts:
+        agenda.enqueue(fact)
+        inferred.add(fact)
+
+    while not agenda.is_empty():
+        fact = agenda.dequeue()
+        print(f"\nProcessing: {fact}")
 
         for premises, conclusion in rules:
-            if set(premises).issubset(inferred) and conclusion not in inferred:
-                print(f"Infer {conclusion} using {premises} -> {conclusion}")
-                new_inferred.add(conclusion)
+            # If fact is part of premises
+            if fact in premises:
 
-        if not new_inferred:
-            break
+                # Check if all premises are satisfied
+                if set(premises).issubset(inferred):
 
-        inferred.update(new_inferred)
+                    if conclusion not in inferred:
+                        print(f"Infer {conclusion} using {premises} -> {conclusion}")
 
-        if goal in inferred:
-            print(f"\nGoal {goal} reached!")
-            return True
+                        inferred.add(conclusion)
+                        agenda.enqueue(conclusion)
+
+                        if conclusion == goal:
+                            print(f"\nGoal {goal} reached!")
+                            return True
 
     print(f"\nGoal {goal} NOT reached.")
     return False
@@ -36,7 +63,7 @@ rules1a = [
 facts1a = ["A", "B", "M"]
 goal1a = "Q"
 
-forward_chaining(rules1a, facts1a, goal1a)
+forward_chaining_queue(rules1a, facts1a, goal1a)
 
 
 # 1(b)
@@ -49,4 +76,4 @@ rules1b = [
 facts1b = ["A", "E"]
 goal1b = "F"
 
-forward_chaining(rules1b, facts1b, goal1b)
+forward_chaining_queue(rules1b, facts1b, goal1b)

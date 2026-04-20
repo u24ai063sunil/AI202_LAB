@@ -1,7 +1,21 @@
-from collections import deque
+class Deque:
+    def __init__(self):
+        self.data = []
+        self.front = 0
 
-# ── Domain & Conflict Setup ────────────────────────────────────────────────────
+    def append(self, item):
+        self.data.append(item)
 
+    def popleft(self):
+        if self.is_empty():
+            return None
+        item = self.data[self.front]
+        self.front += 1
+        return item
+
+    def is_empty(self):
+        return self.front >= len(self.data)
+    
 ROOMS = {"R1", "R2", "R3"}
 
 CONFLICTS = {
@@ -23,20 +37,15 @@ def constraint(val_i, val_j):
 # ── AC-3 ──────────────────────────────────────────────────────────────────────
 
 def ac3(domains):
-    """
-    Apply AC-3 to the CSP.
-    Returns (arc_consistent: bool, final_domains: dict).
-    Prints a trace of every arc check.
-    """
     # Initialise queue with every directed arc (Xi, Xj) for each conflict
-    queue = deque()
+    queue = Deque()
     for xi, neighbors in CONFLICTS.items():
         for xj in neighbors:
             queue.append((xi, xj))
 
     arc_num = 0
 
-    while queue:
+    while not queue.is_empty():
         xi, xj = queue.popleft()
         arc_num += 1
         revised, removed = revise(domains, xi, xj)
@@ -45,7 +54,7 @@ def ac3(domains):
         print(f"  Arc {arc_num:>2}: ({xi} → {xj})  {status}")
 
         if revised:
-            if not domains[xi]:          # domain wiped out → failure
+            if not domains[xi]:          
                 print(f"\n  ✗ Domain of {xi} is empty — AC-3 detects FAILURE.\n")
                 return False, domains
             # Re-add arcs into Xi from all its other neighbors
@@ -58,10 +67,6 @@ def ac3(domains):
 
 
 def revise(domains, xi, xj):
-    """
-    Remove values from domains[xi] that have no support in domains[xj].
-    Returns (revised: bool, removed_values: set).
-    """
     removed = set()
     for val_i in set(domains[xi]):
         # Check if ANY value in xj satisfies the constraint
@@ -71,7 +76,6 @@ def revise(domains, xi, xj):
     return bool(removed), removed
 
 
-# ── Pretty Printer ─────────────────────────────────────────────────────────────
 
 def print_domains(domains, title="Domains"):
     print(f"\n  {title}:")
@@ -80,8 +84,6 @@ def print_domains(domains, title="Domains"):
         print(f"    {team}: {{{bar}}}")
     print()
 
-
-# ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
     print("=" * 60)
@@ -109,7 +111,7 @@ def main():
     print("=" * 60)
     print("\n[ Part 2 ]  Pre-assign P1 = R1, then run AC-3\n")
     domains2 = initial_domains()
-    domains2["P1"] = {"R1"}           # force assignment
+    domains2["P1"] = {"R1"}          
     print_domains(domains2, "Domains after P1 = R1")
 
     print("  Arc-reduction trace:")

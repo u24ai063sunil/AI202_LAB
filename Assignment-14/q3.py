@@ -1,4 +1,3 @@
-# ───────────── RESOLUTION METHOD ─────────────
 
 def negate(literal):
     return literal[1:] if literal.startswith("~") else "~" + literal
@@ -44,7 +43,6 @@ def resolution(kb, query):
         clauses.extend(new)
 
 
-# ───────── TEST CASES ─────────
 
 # 3(a)
 kb3a = [

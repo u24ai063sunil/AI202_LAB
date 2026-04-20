@@ -64,7 +64,6 @@ class Conditional:
         self.right = right
 
     def evaluate(self, assignment):
-        # false only when left is true and right is false
         return (not self.left.evaluate(assignment)) or self.right.evaluate(assignment)
 
     def symbols(self):
@@ -89,7 +88,6 @@ class Biconditional:
         return f"({self.left} <-> {self.right})"
 
 
-# get unique symbols in order
 def get_symbols(expr):
     seen = []
     for s in expr.symbols():
@@ -103,7 +101,6 @@ def print_truth_table(expr, label=None):
     if label is None:
         label = str(expr)
 
-    # print header
     header = ""
     for s in syms:
         header += f"{s}\t"
@@ -111,7 +108,6 @@ def print_truth_table(expr, label=None):
     print(header)
     print("-" * (len(header) + 10))
 
-    # print rows
     for values in product([False, True], repeat=len(syms)):
         assignment = {}
         for i in range(len(syms)):
