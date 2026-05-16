@@ -1,0 +1,1 @@
+{"name":"Local: SegmentTree_Template","url":"c:\\AI_LAB\\SegmentTree_Template.cpp","tests":[{"id":1778831749864,"input":"2 4\n1 6 3 5\n1 4\n3 4\n1 2\n1 2\n","output":"1\n3\n3\n3\n"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"c:\\AI_LAB\\SegmentTree_Template.cpp","group":"local","local":true}
