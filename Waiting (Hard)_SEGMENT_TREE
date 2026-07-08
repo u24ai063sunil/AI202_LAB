@@ -1,0 +1,187 @@
+This is the hard version of the problem. Here, you can make at most one change to the array.
+
+There are 
+N
+N people wanting to enter a movie theatre, however the movie theatre has a weird rule, the people have to enter in order that they bought the tickets.
+
+The people are indexed 
+1
+1 through 
+N
+N based on when they bought the ticket.
+
+The 
+i
+i-th person shows up at time 
+A
+i
+A 
+i
+​
+ , but he may have to wait for others till he is allowed to enter the movie theatre. Assume that you can enter instantly otherwise.
+
+You are given the times when the people will arrive, however, now you can change at most 
+1
+1 value from this list (to some integer in 
+[
+1
+,
+10
+9
+]
+[1,10 
+9
+ ]). Find the the minimum total wait time possible.
+
+Input Format
+The first line of input will contain a single integer 
+T
+T, denoting the number of test cases.
+Each test case consists of multiple lines of input.
+The first line contains a single integer 
+N
+N.
+The second line contains 
+N
+N integers - 
+A
+1
+,
+A
+2
+,
+…
+,
+A
+N
+A 
+1
+​
+ ,A 
+2
+​
+ ,…,A 
+N
+​
+ .
+Output Format
+For each test case, output on a new line the total wait time after changing at most 
+1
+1 
+A
+i
+A 
+i
+​
+  value.
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Node {
+    long long mx;
+    long long sum;
+    long long wait;
+};
+
+int n;
+vector<long long> a;
+vector<Node> tree;
+
+long long calculate_wait(int node, int L, int R, long long incoming_max) {
+    if (L == R) {
+        return max(0LL, incoming_max - tree[node].sum);
+    }
+    if (incoming_max >= tree[node].mx) {
+        return (R - L + 1) * incoming_max - tree[node].sum;
+    }
+    
+    int mid = (L + R) / 2;
+    if (incoming_max >= tree[2 * node].mx) {
+        long long left_contrib = (mid - L + 1) * incoming_max - tree[2 * node].sum;
+        long long right_contrib = calculate_wait(2 * node + 1, mid + 1, R, incoming_max);
+        return left_contrib + right_contrib;
+    } else {
+        long long left_contrib = calculate_wait(2 * node, L, mid, incoming_max);
+        long long right_contrib = tree[node].wait - tree[2 * node].wait;
+        return left_contrib + right_contrib;
+    }
+}
+
+void merge(int node, int L, int R) {
+    int mid = (L + R) / 2;
+    tree[node].mx = max(tree[2 * node].mx, tree[2 * node + 1].mx);
+    tree[node].sum = tree[2 * node].sum + tree[2 * node + 1].sum;
+    tree[node].wait = tree[2 * node].wait + calculate_wait(2 * node + 1, mid + 1, R, tree[2 * node].mx);
+}
+
+void build(int node, int L, int R) {
+    if (L == R) {
+        tree[node] = {a[L], a[L], 0};
+        return;
+    }
+    int mid = (L + R) / 2;
+    build(2 * node, L, mid);
+    build(2 * node + 1, mid + 1, R);
+    merge(node, L, R);
+}
+
+void update(int node, int L, int R, int idx, long long val) {
+    if (L == R) {
+        tree[node] = {val, val, 0};
+        return;
+    }
+    int mid = (L + R) / 2;
+    if (idx <= mid) {
+        update(2 * node, L, mid, idx, val);
+    } else {
+        update(2 * node + 1, mid + 1, R, idx, val);
+    }
+    merge(node, L, R);
+}
+
+void solve() {
+    cin >> n;
+    a.resize(n);
+    vector<long long> pref_max(n);
+    for (int i = 0; i < n; ++i) {
+        cin >> a[i];
+        if (i == 0) pref_max[i] = a[i];
+        else pref_max[i] = max(pref_max[i - 1], a[i]);
+    }
+
+    tree.assign(4 * n, {0, 0, 0});
+    build(1, 0, n - 1);
+
+    long long min_total_wait = tree[1].wait;
+
+    for (int i = 0; i < n; ++i) {
+        long long original_val = a[i];
+
+        update(1, 0, n - 1, i, 1);
+        min_total_wait = min(min_total_wait, tree[1].wait);
+
+        if (i > 0) {
+            update(1, 0, n - 1, i, pref_max[i - 1]);
+            min_total_wait = min(min_total_wait, tree[1].wait);
+        }
+
+        update(1, 0, n - 1, i, original_val);
+    }
+
+    cout << min_total_wait << "\n";
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
+    int t;
+    cin >> t;
+    while (t--) {
+        solve();
+    }
+    return 0;
+}
